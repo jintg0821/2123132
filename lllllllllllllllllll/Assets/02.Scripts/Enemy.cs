@@ -4,23 +4,86 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public GameObject prfHpBar;
-    public GameObject canvas;
+    float health = 50.0f;
+    public GameObject expEffect;
+    private Rigidbody2D rb;
+    private Transform tr;
 
-    RectTransform hpBar;
+    public float Health
+    {
+        get
+        {
+            return health;
+        }
+    }
+
+    void TakeDamage(int value)
+    {
+        health -= value;
+        if (health <= 0)
+        {
+            die();
+        }
+    }
+
+    public float GetHealth()
+    {
+        return health;
+    }
+
+    public void OnCollisionEnter2D(Collision2D coll)
+    {
+        if (coll.gameObject.CompareTag("BULLET"))
+        {
+            TakeDamage(10);
+            Debug.Log("health :" + health);
+            coll.gameObject.SetActive(false);
+            if (coll.collider.CompareTag("BULLET"))
+            {
+                // 총알 맞은 횟수를 증가시키고 3회 이상이면 폭발 처리
+                if (++hitCount == 3)
+                {
+                    ExpEnemy();
+                }
+            }
+        }
+        // 드럼통을 폭발시킬 함수
+        void ExpEnemy()
+        {
+            // 폭발 효과 파티클 생성
+            GameObject exp = Instantiate(expEffect, tr.position, Quaternion.identity);
+            // 폭발 효과 파티클 1초 후에 제거
+            Destroy(exp, 1.0f);
+            // Rigidbody 컴포넌트의 mass를 1.0으로 수정해 무게를 가볍게 함
+            rb.mass = 1.0f;
+            // 위로 솟구치는 힘을 가함
+            rb.AddForce(Vector3.up * 1500.0f);
+            // 3초 후에 드럼통 제거
+            Destroy(gameObject, 3.0f);
+        }
+    }
+
+    void die()
+    {
+        Destroy(this.gameObject);
+    }
+
+    
+    // 총알 맞은 횟수를 누적시킬 변수
+    private int hitCount = 0;
+
+    
 
     public float height = 1.7f;
     // Start is called before the first frame update
     void Start()
     {
-        hpBar = Instantiate(prfHpBar, canvas.transform).GetComponent<RectTransform>();
+        transform.position = new Vector3(16, -2, 0);
     }
 
     // Update is called once per frame
     void Update()
     {
-        Vector3 _hpBarPos =
-           Camera.main.WorldToScreenPoint(new Vector3(transform.position.x, transform.position.y + height, 0));
-        hpBar.position = _hpBarPos;
+       
     }
 }

@@ -5,30 +5,29 @@ using UnityEngine.UI;
 
 public class PlayerCtrl : MonoBehaviour
 {
-    public float maxSpeed;
-    public int maxHp;
-    public int nowHp;
-    public int atkDmg;
-    public float atkSpeed = 1;
-    public bool attacked = false;
-    public Image nowHpbar;
+    public float maxSpeed; 
+    public float BulletSpeed;
+    public GameObject BulletPrefab;
+    public float speed = 0.1f;
+
+    float health = 100.0f;
+
 
     Rigidbody2D rb; //물리이동을 위한 변수 선언 
     SpriteRenderer spriteRenderer;
-    Animator animator;
 
-    void AttackTrue()
+    void TakeDamage(int value)
     {
-        attacked = true;
+        health -= value;
+        if (health <= 0)
+        {
+            Die();
+        }
     }
-    void AttackFalse()
+
+    void Die()
     {
-        attacked = false;
-    }
-    void SetAttackSpeed(float speed)
-    {
-        animator.SetFloat("attackSpeed", speed);
-        atkSpeed = speed;
+        Destroy(this.gameObject);
     }
 
     private void Awake()
@@ -54,38 +53,53 @@ public class PlayerCtrl : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            TakeDamage(10);
+            Destroy(collision.gameObject);
+        }
     }
     void Start()
     {
-        maxHp = 50;
-        nowHp = 50;
-        atkDmg = 10;
-
-        transform.position = new Vector3(0, -3, 0);
-        animator = GetComponent<Animator>();
-        SetAttackSpeed(1.5f);
+        transform.position = new Vector3(1, -2, 0);
     }
 
     // Update is called once per frame
     void Update()
     {
-        nowHpbar.fillAmount = (float)nowHp / (float)maxHp;
-
-        if (Input.GetButtonUp("Horizontal"))
+       if (Input.GetKey(KeyCode.W))
         {
-            rb.velocity = new Vector2(0.5f * rb.velocity.normalized.x, rb.velocity.y);
+            this.transform.Translate(0, speed, 0);
         }
-
-        if (Input.GetButtonDown("Horizontal"))
+        if (Input.GetKey(KeyCode.S))
         {
-            spriteRenderer.flipX = Input.GetAxisRaw("Horizontal") == -1;
+            this.transform.Translate(0, -speed, 0);
         }
-        
+        if (Input.GetKey(KeyCode.A))
+        {
+            this.transform.Translate(-speed, 0, 0);
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            this.transform.Translate(speed, 0, 0);
+        }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            for (int i = 0; i < 1; i++)
+            {
+                GameObject Bullet = Instantiate(BulletPrefab);
+                Vector3 bulletPos = transform.position;
+                bulletPos.x += 0.3f * i;
+                Bullet.transform.position = bulletPos;
+                Bullet.GetComponent<Rigidbody2D>().AddForce(Vector2.up * BulletSpeed);
 
-    
-    
-}
-    // Start is called before the first frame update
-    
+
+
+
+
+            }
+            // Start is called before the first frame update
+
+        }
+    }
 }
