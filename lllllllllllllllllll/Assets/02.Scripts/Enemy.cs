@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Enemy : MonoBehaviour
 {
@@ -8,22 +9,35 @@ public class Enemy : MonoBehaviour
     public GameObject expEffect;
     private Rigidbody2D rb;
     private Transform tr;
+    public GameObject effectPrefab; // 이펙트 프리팹
+    
 
     public float Health
     {
         get
         {
             return health;
+
+        }
+        set
+        {
+            health = value;
         }
     }
 
-    void TakeDamage(int value)
+    public void TakeDamage(int value)
     {
         health -= value;
         if (health <= 0)
         {
             die();
         }
+    }
+
+    public void AddEffect(Vector3 position)
+    {
+        GameObject effect = Instantiate(effectPrefab, position, Quaternion.identity);
+        Destroy(effect, 1.0f); // 1초 후에 이펙트 삭제
     }
 
     public float GetHealth()
@@ -36,31 +50,14 @@ public class Enemy : MonoBehaviour
         if (coll.gameObject.CompareTag("BULLET"))
         {
             TakeDamage(10);
-            Debug.Log("health :" + health);
+            Debug.Log("$health값 : { health}");
             coll.gameObject.SetActive(false);
-            if (coll.collider.CompareTag("BULLET"))
-            {
-                // 총알 맞은 횟수를 증가시키고 3회 이상이면 폭발 처리
-                if (++hitCount == 3)
-                {
-                    ExpEnemy();
-                }
-            }
+            
+                
         }
-        // 드럼통을 폭발시킬 함수
-        void ExpEnemy()
-        {
-            // 폭발 효과 파티클 생성
-            GameObject exp = Instantiate(expEffect, tr.position, Quaternion.identity);
-            // 폭발 효과 파티클 1초 후에 제거
-            Destroy(exp, 1.0f);
-            // Rigidbody 컴포넌트의 mass를 1.0으로 수정해 무게를 가볍게 함
-            rb.mass = 1.0f;
-            // 위로 솟구치는 힘을 가함
-            rb.AddForce(Vector3.up * 1500.0f);
-            // 3초 후에 드럼통 제거
-            Destroy(gameObject, 3.0f);
-        }
+
+
+       
     }
 
     void die()
@@ -69,9 +66,7 @@ public class Enemy : MonoBehaviour
     }
 
     
-    // 총알 맞은 횟수를 누적시킬 변수
-    private int hitCount = 0;
-
+    
     
 
     public float height = 1.7f;
@@ -79,11 +74,12 @@ public class Enemy : MonoBehaviour
     void Start()
     {
         transform.position = new Vector3(16, -2, 0);
+        Debug.Log($"health값 : {health}");
     }
 
     // Update is called once per frame
     void Update()
     {
-       
+        
     }
 }

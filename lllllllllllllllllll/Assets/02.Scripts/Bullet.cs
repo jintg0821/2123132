@@ -12,7 +12,9 @@ public class Bullet : MonoBehaviour
     public GameObject explosion;
 
     private Rigidbody2D rb;
+    public GameObject sparkEffect;
 
+    
     
 
     void DestroyBullet()
@@ -20,13 +22,13 @@ public class Bullet : MonoBehaviour
         Destroy(gameObject);
         Instantiate(explosion, transform.position, Quaternion.identity);
     }
-    private void OnTriggerEnter2D(Collider2D Enemy)
+  private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (Enemy.tag == ("Enemy"))
+        if (collision.tag == "Enemy")
         {
+            collision.GetComponent<Enemy>().TakeDamage(damage);
             Instantiate(explosion, transform.position, Quaternion.identity);
-            Destroy(Enemy.gameObject);
-            Destroy(this.gameObject);
+            DestroyBullet();
         }
     }
     void Start()
@@ -34,9 +36,9 @@ public class Bullet : MonoBehaviour
         Invoke("DestroySelf", 2.0f);
         rb = GetComponent<Rigidbody2D>();
         // 총알의 전진 방향으로 힘(Force)을 가한다.
-
-      
         
+
+
     }
 
     // Update is called once per frame
@@ -45,7 +47,7 @@ public class Bullet : MonoBehaviour
         pos = transform.position;
         pos.x += speed * Time.deltaTime;
         transform.position = pos;
-      
+        
     }
 
     void DestroySelf()
